@@ -1,13 +1,37 @@
 import sys
 import train
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 def test(training_file, testing_file):
     X,y = train.process_training_examples(training_file)
     X_test, y_test = train.process_training_examples(testing_file)
-    svm = train.train_svm(X, y)
-    accuracy = test_with(svm, X_test, y_test)
-    print("SVM has classification accuracy of {}%".format(100 * accuracy))
 
+    lin_svm = train.train_linear_svm(X, y)
+    linear_svm_accuracy = test_with(lin_svm, X_test, y_test)
+    print("LinearSVM has classification accuracy of {}%".format(100 * linear_svm_accuracy))
+
+    rbf_svm = train.train_rbf_svm(X, y)
+    rbf_svm_accuracy = test_with(rbf_svm, X_test, y_test)
+    print("RBF-SVM has classification accuracy of {}%".format(100 * rbf_svm_accuracy))
+
+    nbc = train.train_naive_bayes(X, y)
+    nb_accuracy = test_with(nbc, X_test, y_test)
+    print("Multinomial Naive Bayes has classification accuracy of {}%".format(100 * nb_accuracy))
+
+    lda = train.train_lda(X, y)
+    lda_accuracy = test_with(lda, X_test, y_test)
+    print("LDA has classification accuracy of {}%".format(100 * lda_accuracy))
+
+    #Print SVM confusion matrix
+    y_pred = lin_svm.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
+    plt.matshow(cm)
+    plt.title('Confusion matrix for SVM Classification of File Fragment Types')
+    #plt.colorbar()
+    plt.ylabel('True File Type')
+    plt.xlabel('Predicted File Type')
+    plt.show()
 
 def test_with(classifier, X, y):
     correct_count = 0
@@ -17,9 +41,7 @@ def test_with(classifier, X, y):
         expected_label = classifier.predict(test_vec)
         if label == expected_label:
             correct_count += 1
-        print("Guess: {}\tActual: {}".format(expected_label, label))
     return float(correct_count) / len(y)
-
 
 def print_usage():
     print("Usage: {} training_data.csv testing_data.csv".format(sys.argv[0]))
